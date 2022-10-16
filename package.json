@@ -1,0 +1,40 @@
+{
+  "name": "dreamland-promo-code-extension",
+  "description": "Let me find that promo code for you",
+  "homepage": "https://github.com/kvandenhaute/dreamland-pce/",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "rollup --config",
+    "dev": "rollup --config -w",
+    "tsc:fix": "eslint --fix --ext .ts 'extensions/**/*.ts'",
+    "evergreen": "ncu -i --target patch --enginesNode && npm i && npm audit fix",
+    "evergreen:minor": "ncu -i --target minor --enginesNode && npm i && npm audit fix",
+    "evergreen:latest": "ncu -i --target latest --enginesNode && npm i && npm audit fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kvandenhaute/dreamland-pce.git"
+  },
+  "author": "Kevin Van Den Haute",
+  "license": "MIT",
+  "engines": {
+    "node": "16"
+  },
+  "devDependencies": {
+    "@babel/core": "7.14.0",
+    "@babel/preset-env": "7.14.1",
+    "@rollup/plugin-babel": "5.3.0",
+    "@rollup/plugin-typescript": "8.2.1",
+    "@types/chrome": "0.0.137",
+    "@typescript-eslint/eslint-plugin": "4.22.1",
+    "@typescript-eslint/parser": "4.22.1",
+    "eslint": "7.25.0",
+    "eslint-plugin-simple-import-sort": "7.0.0",
+    "lint-staged": "10.5.4",
+    "npm-check-updates": "11.5.10",
+    "rollup": "2.47.0",
+    "rollup-plugin-terser": "7.0.2",
+    "tslib": "2.2.0",
+    "typescript": "4.2.4"
+  }
+}

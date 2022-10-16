@@ -1,0 +1,16 @@
+.DS_Store
+
+# package directories
+node_modules
+
+# Test output
+.eslintcache
+
+# Compiled TypeScript files
+*.js
+*.js.map
+
+# Exclude specific JavaScript files
+!dist/*.js
+!*.config.js
+!**/lib/*.js
