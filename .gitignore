@@ -11,6 +11,4 @@ node_modules
 *.js.map
 
 # Exclude specific JavaScript files
-!dist/*.js
 !*.config.js
-!**/lib/*.js
