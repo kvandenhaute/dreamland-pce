@@ -23,64 +23,58 @@ export default class SearchProgress {
 		this.playButton = this.createPlayButton();
 		this.pauseButton = this.createPauseButton();
 		this.stopButton = this.createStopButton();
+
+		this.createElement();
+		this.startListening();
+		this.requestStatus();
+		this.requestProgress();
 	}
 
-	static builder(url: string, orderId: string): Promise<SearchProgress> {
-		return new this(url, orderId)
-			.createElement()
-			.requestStatus();
+	static builder(url: string, orderId: string): SearchProgress {
+		return new this(url, orderId);
 	}
 
-	private requestStatus(): Promise<this> {
-		return Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.STATUS)
-			.then(status => this.setStatus(status))
-			.then(() => this.requestProgress());
+	private requestStatus(): void {
+		Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.STATUS)
+			.then(status => this.setStatus(status));
 	}
 
-	private setStatus(status: Status): this {
+	private setStatus(status: Status): void {
 		this.status = status;
 
 		return this.toggleButtonsState();
 	}
 
-	// private startListening(): this {
-	// 	chrome.runtime.onMessage.addListener(({ key, body }: ShoppingCardResponseMessage) => {
-	// 		if (!Utils.isSet(body)) {
-	// 			return;
-	// 		} else if (body.orderId !== this.orderId) {
-	// 			return;
-	// 		}
-	//
-	// 		switch (key) {
-	// 			case ServiceWorkerResponse.PROGRESS:
-	// 				this.setProgress(body.value);
-	//
-	// 				break;
-	// 		}
-	// 	});
-	//
-	// 	return this;
-	// }
+	private startListening(): void {
+		chrome.runtime.onMessage.addListener(({ key, body }: ShoppingCardResponseMessage) => {
+			console.log('SearchProgress.class.ts', key, body);
 
-	private requestProgress(): Promise<this> {
-		console.log('request progress');
+			if (!Utils.isSet(body)) {
+				return;
+			} else if (body.orderId !== this.orderId) {
+				return;
+			}
 
-		if (this.status !== Status.STARTED) {
-			return Promise.resolve(this);
-		}
+			switch (key) {
+				case ServiceWorkerResponse.PROGRESS:
+					this.setProgress(body.value);
 
-		return Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.PROGRESS)
-			.then(progress => this.setProgress(progress))
-			.then(() => Utils.wait(100))
-			.then(() => this.requestProgress());
+					break;
+			}
+		});
 	}
 
-	private setProgress(progress: number) {
+	private requestProgress(): void {
+		Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.PROGRESS)
+			.then(progress => this.setProgress(progress));
+	}
+
+	private setProgress(progress: number): void {
 		this.progressBar.setAttribute('value', progress.toString());
 		this.progressBar.textContent = `${progress}%`;
 	}
 
-	private toggleButtonsState(): this {
+	private toggleButtonsState(): void {
 		switch (this.status) {
 			case Status.NOT_STARTED:
 				this.playButton.disabled = false;
@@ -106,11 +100,9 @@ export default class SearchProgress {
 				this.pauseButton.disabled = true;
 				this.stopButton.disabled = true;
 		}
-
-		return this;
 	}
 
-	private createElement(): this {
+	private createElement(): void {
 		const el = document.createElement('article')
 
 		el.setAttribute('id', this.orderId);
@@ -122,8 +114,6 @@ export default class SearchProgress {
 
 		const root = document.querySelector('.fjs-parent') as HTMLDivElement;
 		root.append(el);
-
-		return this;
 	}
 
 	private createProgressBar(): HTMLProgressElement {
@@ -198,7 +188,7 @@ export default class SearchProgress {
 		return el;
 	}
 
-	private play(): Promise<this> {
+	private play(): Promise<void> {
 		if (this.status === Status.PAUSED) {
 			return Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.RESUME)
 				.then(status => this.setStatus(status));
@@ -209,7 +199,7 @@ export default class SearchProgress {
 		const langId = this.url.searchParams.get('langId');
 
 		if (!Utils.isSet(catalogId) || !Utils.isSet(storeId) || !Utils.isSet(langId)) {
-			return Promise.resolve(this);
+			return Promise.resolve();
 		}
 
 		return Messages.shoppingCardRequest<SearchParams>(this.orderId, ServiceWorkerRequest.PLAY, {
@@ -217,16 +207,15 @@ export default class SearchProgress {
 			catalogId,
 			storeId,
 			langId
-		}).then(status => this.setStatus(status))
-			.then(() => this.requestProgress());
+		}).then(status => this.setStatus(status));
 	}
 
-	private pause(): Promise<this> {
+	private pause(): Promise<void> {
 		return Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.PAUSE)
 			.then(status => this.setStatus(status));
 	}
 
-	private stop(): Promise<this> {
+	private stop(): Promise<void> {
 		return Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.STOP)
 			.then(status => this.setStatus(status));
 	}

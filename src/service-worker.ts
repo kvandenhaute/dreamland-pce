@@ -6,6 +6,32 @@ import { ServiceWorkerRequest, Status } from './lib/values';
 
 const shoppingCards: Map<string, ShoppingCard> = new Map();
 
+let popupOpen: boolean = false;
+
+chrome.runtime.onConnect.addListener(port => {
+	console.log('onConnect', port);
+
+	if (port.name === 'popup') {
+		popupOpen = true;
+
+		setCanSendProgress();
+
+		port.onDisconnect.addListener(() => {
+			console.log('popup has been closed');
+
+			popupOpen = false;
+
+			setCanSendProgress();
+		});
+	}
+});
+
+function setCanSendProgress() {
+	for (const card of shoppingCards.values()) {
+		card.setCanSendProgress(popupOpen);
+	}
+}
+
 chrome.runtime.onMessage.addListener((message: ServiceWorkerRequestMessage | ShoppingCardRequestMessage, sender, sendResponse) => {
 	if (isShoppingCardRequestMessage(message)) {
 		return shoppingCardMessageHandler(message, sendResponse);
@@ -101,6 +127,8 @@ function sendStatus(orderId: string, sendResponse: SendResponse<Status>): void {
 function sendProgress(orderId: string, sendResponse: SendResponse<number>): void {
 	const card = getShoppingCard(orderId);
 
+	console.log('sendProgress', orderId, card.getProgress())
+
 	sendResponse(card.getProgress());
 }
 
@@ -115,7 +143,7 @@ function getShoppingCard(orderId: string) {
 }
 
 function createShoppingCard(orderId: string): ShoppingCard {
-	const card = new ShoppingCard(orderId);
+	const card = new ShoppingCard(orderId, popupOpen);
 
 	shoppingCards.set(orderId, card);
 

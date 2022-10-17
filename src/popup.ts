@@ -1,8 +1,15 @@
 import SearchProgress from './lib/classes/SearchProgress.class';
 import Messages from './lib/messages';
 import Tabs from './lib/tabs';
+import { ShoppingCardResponseMessage } from './lib/types';
 import Utils from './lib/utils';
-import { ContentRequest, ServiceWorkerRequest } from './lib/values';
+import { ContentRequest, ServiceWorkerRequest, ServiceWorkerResponse } from './lib/values';
+
+chrome.runtime.connect({ name: 'popup' });
+
+chrome.runtime.onMessage.addListener(message => {
+	console.log('popup.ts', message);
+});
 
 Tabs.current()
 	.then(async tab => {
@@ -16,8 +23,7 @@ Tabs.current()
 			return requestOrders();
 		}
 
-		return SearchProgress.builder(tab.url, orderId)
-			.then(() => console.info(`SearchProgress initialized for order ${orderId}`));
+		return SearchProgress.builder(tab.url, orderId);
 	})
 	.catch(console.error);
 

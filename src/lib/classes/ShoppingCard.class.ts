@@ -1,18 +1,21 @@
 import type { AjaxActionResponse, SearchParams } from '../types';
 
+import Messages from '../messages';
 import Utils from '../utils';
-import { Status } from '../values';
+import { ServiceWorkerResponse, Status } from '../values';
 
 export default class ShoppingCard {
 	private readonly orderId: string;
+	private canSendProgress: boolean = false;
 
 	private status: Status = Status.NOT_STARTED;
 	private codesToCheck: Array<string> = [];
 	private totalCodesToCheck: number = 0;
 	private discountCodes: Array<string> = [];
 
-	constructor(orderId: string) {
+	constructor(orderId: string, canSendProgress: boolean) {
 		this.orderId = orderId;
+		this.canSendProgress = canSendProgress;
 	}
 
 	play(searchParams: SearchParams): Promise<Status> {
@@ -38,14 +41,25 @@ export default class ShoppingCard {
 	stop(): this {
 		console.debug(this.orderId, Status.STOPPED);
 
+		this.sendProgress();
+
 		return this.setStatus(Status.STOPPED);
 	}
 
 	getProgress(): number {
 		const totalCodesLeftToCheck = this.codesToCheck.length;
-		const totalCodesChecked = this.totalCodesToCheck - totalCodesLeftToCheck;
 
-		return totalCodesChecked / this.totalCodesToCheck * 100;
+		if (totalCodesLeftToCheck === 0) {
+			return 0;
+		}
+
+		return (this.totalCodesToCheck - totalCodesLeftToCheck) / this.totalCodesToCheck * 100;
+	}
+
+	setCanSendProgress(value: boolean): this {
+		this.canSendProgress = value;
+
+		return this;
 	}
 
 	private generateCodes(): this {
@@ -66,6 +80,16 @@ export default class ShoppingCard {
 		return this.status;
 	}
 
+	private sendProgress() {
+		console.log('ShoppingCard.sendProgress', this.canSendProgress, this.getProgress());
+
+		if (!this.canSendProgress) {
+			return;
+		}
+
+		Messages.sendToShoppingCard(this.orderId, ServiceWorkerResponse.PROGRESS, this.getProgress());
+	}
+
 	private async tryNextCode(searchParams: SearchParams): Promise<Status> {
 		if (this.status === Status.FINISHED) {
 			return this.getStatus();
@@ -78,6 +102,8 @@ export default class ShoppingCard {
 
 		const code = this.codesToCheck.shift();
 
+		console.debug('tryNextCode', this.orderId, code);
+
 		if (!Utils.isSet(code)) {
 			this.status = Status.FINISHED;
 
@@ -88,7 +114,10 @@ export default class ShoppingCard {
 			.then(body => this.parseBody(body));
 
 		if (body.errorCode) {
-			return this.tryNextCode(searchParams);
+			this.sendProgress();
+
+			return Utils.wait(1000)
+				.then(() => this.tryNextCode(searchParams));
 		}
 
 		this.discountCodes.push(body.quickAddCode);

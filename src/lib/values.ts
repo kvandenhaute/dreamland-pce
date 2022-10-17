@@ -1,20 +1,20 @@
 export enum ServiceWorkerRequest {
-	LIST = 'LIST',
-	PLAY = 'START',
-	PAUSE = 'PAUSE',
-	RESUME = 'RESUME',
-	STOP = 'STOP',
-	STATUS = 'STATUS',
-	PROGRESS = 'PROGRESS'
+	LIST = 'LIST_REQUEST',
+	PLAY = 'START_REQUEST',
+	PAUSE = 'PAUSE_REQUEST',
+	RESUME = 'RESUME_REQUEST',
+	STOP = 'STOP_REQUEST',
+	STATUS = 'STATUS_REQUEST',
+	PROGRESS = 'PROGRESS_REQUEST'
 }
 
 export enum ServiceWorkerResponse {
-	PROGRESS = 'progress',
-	STATUS = 'status'
+	PROGRESS = 'PROGRESS_RESPONSE',
+	STATUS = 'STATUS_RESPONSE'
 }
 
 export enum ContentRequest {
-	ORDER_ID = 'order-id'
+	ORDER_ID = 'ORDER_ID_REQUEST'
 }
 
 export enum Status {

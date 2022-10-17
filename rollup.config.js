@@ -6,8 +6,8 @@ export default [
     ...getExtensionConfig('content', 'popup', 'service-worker')
 ];
 
-function getExtensionConfig(...basenames) {
-    return basenames.map(basename => getConfig(basename));
+function getExtensionConfig(...filenames) {
+    return filenames.map(basename => getConfig(basename));
 }
 
 function getConfig(basename) {

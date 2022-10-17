@@ -25,7 +25,7 @@ function sendShoppingCardResponse<Value>(orderId: string, key: ServiceWorkerResp
 
 export default {
 	serviceWorkerRequest: sendServiceWorkerRequest,
-	shoppingCardResponse: sendShoppingCardResponse,
+	sendToShoppingCard: sendShoppingCardResponse,
 	shoppingCardRequest: sendShoppingCardRequest
 };
 
