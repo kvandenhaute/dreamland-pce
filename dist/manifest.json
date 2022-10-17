@@ -24,5 +24,10 @@
         "content.js"
       ]
     }
-  ]
+  ],
+  "icons": {
+    "16": "dreamland.ico",
+    "32": "dreamland.ico",
+    "48": "dreamland.ico"
+  }
 }

@@ -1,11 +1,14 @@
-export enum BackgroundRequest {
-	PLAY = 'start-searching',
-	PAUSE = 'pause-searching',
-	STOP = 'stop-searching',
-	STATUS = 'background-status'
+export enum ServiceWorkerRequest {
+	LIST = 'LIST',
+	PLAY = 'START',
+	PAUSE = 'PAUSE',
+	RESUME = 'RESUME',
+	STOP = 'STOP',
+	STATUS = 'STATUS',
+	PROGRESS = 'PROGRESS'
 }
 
-export enum BackgroundResponse {
+export enum ServiceWorkerResponse {
 	PROGRESS = 'progress',
 	STATUS = 'status'
 }
