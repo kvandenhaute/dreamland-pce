@@ -16,7 +16,7 @@ function getConfig(basename) {
         output: {
             file: `dist/${basename}.js`,
             format: 'esm',
-            // plugins: [terser()]
+            plugins: [terser()]
         },
         plugins: [
             typescript({

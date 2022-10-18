@@ -113,17 +113,24 @@ export default class ShoppingCard {
 		}
 
 		const body = await this.fetch(searchParams, code)
-			.then(body => this.parseBody(body));
+			.then(body => this.parseBody(body))
+			.catch(() => null);
 
-		if (body.errorCode) {
-			this.sendProgress();
+		if (!Utils.isSet(body)) {
+			this.codesToCheck.push(code);
 
 			return this.tryNextCode(searchParams);
+		} else if (body.errorCode) {
+			this.sendProgress();
+
+			return Utils.wait(400)
+				.then(() => this.tryNextCode(searchParams));
 		}
 
 		this.discountCodes.push(body.quickAddCode);
 
-		return this.tryNextCode(searchParams);
+		return Utils.wait(100)
+			.then(() => this.tryNextCode(searchParams));
 	}
 
 	private fetch(searchParams: SearchParams, code: string): Promise<string> {
