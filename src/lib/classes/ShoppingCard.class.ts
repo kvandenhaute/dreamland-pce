@@ -129,7 +129,7 @@ export default class ShoppingCard {
 
 		this.discountCodes.push(body.quickAddCode);
 
-		return Utils.wait(100)
+		return Utils.wait(10)
 			.then(() => this.tryNextCode(searchParams));
 	}
 
