@@ -29,8 +29,20 @@ article + article {
 }
 
 progress {
+	position: relative;
 	width: 100%;
-	accent-color: #004ec3;
+	height: 3em;
+	font-size: .75em;
+	accent-color: #cbd783;
+	color: #fff;
+}
+
+progress::before {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	content: attr(value)'%'
 }
 
 button {

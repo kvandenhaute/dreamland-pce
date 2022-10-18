@@ -1,6 +1,6 @@
 import babel from '@rollup/plugin-babel';
 import typescript from '@rollup/plugin-typescript';
-import { terser } from 'rollup-plugin-terser';
+import { terser } from '@el3um4s/rollup-plugin-terser';
 
 export default [
     ...getExtensionConfig('content', 'popup', 'service-worker')
