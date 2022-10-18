@@ -77,7 +77,7 @@ export default class SearchProgress {
 	private toggleButtonsState(): void {
 		switch (this.status) {
 			case Status.NOT_STARTED:
-				this.playButton.disabled = false;
+				this.playButton.disabled = !this.canStartSearching();
 				this.pauseButton.disabled = true;
 				this.stopButton.disabled = true;
 
@@ -218,5 +218,13 @@ export default class SearchProgress {
 	private stop(): Promise<void> {
 		return Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.STOP)
 			.then(status => this.setStatus(status));
+	}
+
+	private canStartSearching(): boolean {
+		const catalogId = this.url.searchParams.get('catalogId');
+		const storeId = this.url.searchParams.get('storeId');
+		const langId = this.url.searchParams.get('langId');
+
+		return !(!Utils.isSet(catalogId) || !Utils.isSet(storeId) || !Utils.isSet(langId));
 	}
 }

@@ -1,15 +1,10 @@
 import SearchProgress from './lib/classes/SearchProgress.class';
 import Messages from './lib/messages';
 import Tabs from './lib/tabs';
-import { ShoppingCardResponseMessage } from './lib/types';
 import Utils from './lib/utils';
-import { ContentRequest, ServiceWorkerRequest, ServiceWorkerResponse } from './lib/values';
+import { Connection, ContentRequest, ServiceWorkerRequest } from './lib/values';
 
-chrome.runtime.connect({ name: 'popup' });
-
-chrome.runtime.onMessage.addListener(message => {
-	console.log('popup.ts', message);
-});
+chrome.runtime.connect({ name: Connection.POPUP });
 
 Tabs.current()
 	.then(async tab => {
@@ -20,7 +15,7 @@ Tabs.current()
 		const orderId = await getOrderId(tab);
 
 		if (!Utils.isSet(orderId)) {
-			return requestOrders();
+			return requestOrders(tab.url);
 		}
 
 		return SearchProgress.builder(tab.url, orderId);
@@ -43,9 +38,8 @@ function getOrderId(tab: chrome.tabs.Tab): Promise<string | null> {
 	});
 }
 
-function requestOrders() {
-	console.log('requestOrders');
+async function requestOrders(url: string): Promise<void> {
+	const orderIds = await Messages.serviceWorkerRequest<Array<string>>(ServiceWorkerRequest.LIST);
 
-	Messages.serviceWorkerRequest(ServiceWorkerRequest.LIST)
-		.then(console.log);
+	orderIds.map(orderId => SearchProgress.builder(url, orderId));
 }

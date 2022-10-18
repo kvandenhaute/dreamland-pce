@@ -12,6 +12,10 @@ export interface AjaxActionResponse {
 	quickAddCode: string;
 }
 
+export interface SendResponse<T> {
+	(status: T): void;
+}
+
 export interface Message<Key extends string, Body> {
 	key: Key;
 	body?: Body;

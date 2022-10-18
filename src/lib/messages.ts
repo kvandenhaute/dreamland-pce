@@ -32,11 +32,7 @@ export default {
 function sendRuntimeMessage<Response, Message = unknown>(message: Message): Promise<Response> {
 	return new Promise((resolve, reject) => {
 		chrome.runtime.sendMessage(message, response => {
-			console.log('chrome.runtime.sendMessage', message, response);
-
 			if (chrome.runtime.lastError) {
-				console.log('lastError', chrome.runtime.lastError);
-
 				return reject();
 			}
 

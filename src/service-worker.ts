@@ -1,36 +1,22 @@
-import type { SearchParams, ServiceWorkerRequestMessage, ShoppingCardRequestMessage } from './lib/types';
+import type { SearchParams, SendResponse, ServiceWorkerRequestMessage, ShoppingCardRequestMessage } from './lib/types';
 
 import ShoppingCard from './lib/classes/ShoppingCard.class';
 import Utils from './lib/utils';
-import { ServiceWorkerRequest, Status } from './lib/values';
+import { Connection, PopupStatus, ServiceWorkerRequest, Status } from './lib/values';
 
 const shoppingCards: Map<string, ShoppingCard> = new Map();
 
-let popupOpen: boolean = false;
+let popupStatus: PopupStatus = PopupStatus.CLOSED;
 
 chrome.runtime.onConnect.addListener(port => {
-	console.log('onConnect', port);
-
-	if (port.name === 'popup') {
-		popupOpen = true;
-
-		setCanSendProgress();
+	if (port.name === Connection.POPUP) {
+		setPopupStatus(PopupStatus.OPEN);
 
 		port.onDisconnect.addListener(() => {
-			console.log('popup has been closed');
-
-			popupOpen = false;
-
-			setCanSendProgress();
+			setPopupStatus(PopupStatus.CLOSED);
 		});
 	}
 });
-
-function setCanSendProgress() {
-	for (const card of shoppingCards.values()) {
-		card.setCanSendProgress(popupOpen);
-	}
-}
 
 chrome.runtime.onMessage.addListener((message: ServiceWorkerRequestMessage | ShoppingCardRequestMessage, sender, sendResponse) => {
 	if (isShoppingCardRequestMessage(message)) {
@@ -40,8 +26,8 @@ chrome.runtime.onMessage.addListener((message: ServiceWorkerRequestMessage | Sho
 	return serviceWorkerRequestMessage(message, sendResponse);
 });
 
-function serviceWorkerRequestMessage(message: ServiceWorkerRequestMessage, sendResponse: SendResponse<unknown>): void {
-	switch (message.key) {
+function serviceWorkerRequestMessage({ key }: ServiceWorkerRequestMessage, sendResponse: SendResponse<unknown>): void {
+	switch (key) {
 		case ServiceWorkerRequest.LIST:
 			sendResponse(Array.from(shoppingCards.keys()));
 
@@ -82,6 +68,14 @@ function shoppingCardMessageHandler({ key, body }: ShoppingCardRequestMessage, s
 	}
 }
 
+function setPopupStatus(status: PopupStatus) {
+	popupStatus = status;
+
+	for (const card of shoppingCards.values()) {
+		card.setPopupStatus(status);
+	}
+}
+
 function play(orderId: string, searchParams: SearchParams, sendResponse: SendResponse<Status>): void {
 	const card = getShoppingCard(orderId);
 
@@ -114,10 +108,6 @@ function stop(orderId: string, sendResponse: SendResponse<Status>): void {
 	sendResponse(card.getStatus());
 }
 
-interface SendResponse<T> {
-	(status: T): void;
-}
-
 function sendStatus(orderId: string, sendResponse: SendResponse<Status>): void {
 	const card = getShoppingCard(orderId);
 
@@ -143,7 +133,7 @@ function getShoppingCard(orderId: string) {
 }
 
 function createShoppingCard(orderId: string): ShoppingCard {
-	const card = new ShoppingCard(orderId, popupOpen);
+	const card = new ShoppingCard(orderId, popupStatus);
 
 	shoppingCards.set(orderId, card);
 

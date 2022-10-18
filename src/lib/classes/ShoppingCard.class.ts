@@ -2,20 +2,20 @@ import type { AjaxActionResponse, SearchParams } from '../types';
 
 import Messages from '../messages';
 import Utils from '../utils';
-import { ServiceWorkerResponse, Status } from '../values';
+import { PopupStatus, ServiceWorkerResponse, Status } from '../values';
 
 export default class ShoppingCard {
 	private readonly orderId: string;
-	private canSendProgress: boolean = false;
+	private popupStatus: PopupStatus = PopupStatus.CLOSED;
 
 	private status: Status = Status.NOT_STARTED;
 	private codesToCheck: Array<string> = [];
 	private totalCodesToCheck: number = 0;
 	private discountCodes: Array<string> = [];
 
-	constructor(orderId: string, canSendProgress: boolean) {
+	constructor(orderId: string, popupStatus: PopupStatus) {
 		this.orderId = orderId;
-		this.canSendProgress = canSendProgress;
+		this.popupStatus = popupStatus;
 	}
 
 	play(searchParams: SearchParams): Promise<Status> {
@@ -56,8 +56,8 @@ export default class ShoppingCard {
 		return (this.totalCodesToCheck - totalCodesLeftToCheck) / this.totalCodesToCheck * 100;
 	}
 
-	setCanSendProgress(value: boolean): this {
-		this.canSendProgress = value;
+	setPopupStatus(status: PopupStatus): this {
+		this.popupStatus = status;
 
 		return this;
 	}
@@ -81,9 +81,9 @@ export default class ShoppingCard {
 	}
 
 	private sendProgress() {
-		console.log('ShoppingCard.sendProgress', this.canSendProgress, this.getProgress());
+		console.log('ShoppingCard.sendProgress', this.popupStatus, this.getProgress());
 
-		if (!this.canSendProgress) {
+		if (!this.popupStatus) {
 			return;
 		}
 
@@ -102,8 +102,6 @@ export default class ShoppingCard {
 
 		const code = this.codesToCheck.shift();
 
-		console.debug('tryNextCode', this.orderId, code);
-
 		if (!Utils.isSet(code)) {
 			this.status = Status.FINISHED;
 
@@ -116,8 +114,7 @@ export default class ShoppingCard {
 		if (body.errorCode) {
 			this.sendProgress();
 
-			return Utils.wait(1000)
-				.then(() => this.tryNextCode(searchParams));
+			return this.tryNextCode(searchParams);
 		}
 
 		this.discountCodes.push(body.quickAddCode);

@@ -24,3 +24,12 @@ export enum Status {
 	STOPPED = 'STOPPED',
 	FINISHED = 'FINISHED'
 }
+
+export enum Connection {
+	POPUP = 'DPCE_POPUP'
+}
+
+export enum PopupStatus {
+	CLOSED,
+	OPEN
+}
