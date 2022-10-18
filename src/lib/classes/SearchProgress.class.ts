@@ -34,21 +34,8 @@ export default class SearchProgress {
 		return new this(url, orderId);
 	}
 
-	private requestStatus(): void {
-		Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.STATUS)
-			.then(status => this.setStatus(status));
-	}
-
-	private setStatus(status: Status): void {
-		this.status = status;
-
-		return this.toggleButtonsState();
-	}
-
 	private startListening(): void {
 		chrome.runtime.onMessage.addListener(({ key, body }: ShoppingCardResponseMessage) => {
-			console.log('SearchProgress.class.ts', key, body);
-
 			if (!Utils.isSet(body)) {
 				return;
 			} else if (body.orderId !== this.orderId) {
@@ -60,8 +47,23 @@ export default class SearchProgress {
 					this.setProgress(body.value);
 
 					break;
+				case ServiceWorkerResponse.STATUS:
+					this.setStatus(body.value);
+
+					break;
 			}
 		});
+	}
+
+	private requestStatus(): void {
+		Messages.shoppingCardRequest(this.orderId, ServiceWorkerRequest.STATUS)
+			.then(status => this.setStatus(status));
+	}
+
+	private setStatus(status: Status): void {
+		this.status = status;
+
+		return this.toggleButtonsState();
 	}
 
 	private requestProgress(): void {
@@ -77,6 +79,8 @@ export default class SearchProgress {
 	private toggleButtonsState(): void {
 		switch (this.status) {
 			case Status.NOT_STARTED:
+			case Status.STOPPED:
+			case Status.FINISHED:
 				this.playButton.disabled = !this.canStartSearching();
 				this.pauseButton.disabled = true;
 				this.stopButton.disabled = true;
@@ -94,11 +98,6 @@ export default class SearchProgress {
 				this.stopButton.disabled = false;
 
 				break;
-			case Status.STOPPED:
-			case Status.FINISHED:
-				this.playButton.disabled = false;
-				this.pauseButton.disabled = true;
-				this.stopButton.disabled = true;
 		}
 	}
 

@@ -19,38 +19,34 @@ export default class ShoppingCard {
 	}
 
 	play(searchParams: SearchParams): Promise<Status> {
-		console.debug(this.orderId, Status.STARTED);
-
 		return this.generateCodes()
 			.setStatus(Status.STARTED)
 			.tryNextCode(searchParams);
 	}
 
 	pause(): this {
-		console.debug(this.orderId, Status.PAUSED);
-
 		return this.setStatus(Status.PAUSED);
 	}
 
 	resume(): this {
-		console.debug(this.orderId, Status.STARTED);
-
 		return this.setStatus(Status.STARTED);
 	}
 
 	stop(): this {
-		console.debug(this.orderId, Status.STOPPED);
-
 		this.sendProgress();
 
 		return this.setStatus(Status.STOPPED);
 	}
 
 	getProgress(): number {
+		if (this.totalCodesToCheck === 0) {
+			return 0;
+		}
+
 		const totalCodesLeftToCheck = this.codesToCheck.length;
 
 		if (totalCodesLeftToCheck === 0) {
-			return 0;
+			return 100;
 		}
 
 		return (this.totalCodesToCheck - totalCodesLeftToCheck) / this.totalCodesToCheck * 100;
@@ -80,10 +76,16 @@ export default class ShoppingCard {
 		return this.status;
 	}
 
-	private sendProgress() {
-		console.log('ShoppingCard.sendProgress', this.popupStatus, this.getProgress());
+	private sendStatus() {
+		if (this.popupStatus === PopupStatus.CLOSED) {
+			return;
+		}
 
-		if (!this.popupStatus) {
+		Messages.sendToShoppingCard(this.orderId, ServiceWorkerResponse.STATUS, this.getStatus());
+	}
+
+	private sendProgress() {
+		if (this.popupStatus === PopupStatus.CLOSED) {
 			return;
 		}
 
@@ -104,6 +106,8 @@ export default class ShoppingCard {
 
 		if (!Utils.isSet(code)) {
 			this.status = Status.FINISHED;
+
+			this.sendStatus()
 
 			return Promise.resolve(this.getStatus());
 		}

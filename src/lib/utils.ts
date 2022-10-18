@@ -1,10 +1,9 @@
 function generateCodes(): Array<string> {
 	const codes: Array<string> = [];
-	// const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-	const letters = 'A'.split('');
+	const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 	for (const letter of letters) {
-		for (let i = 0; i < 100; i++) {
+		for (let i = 0; i < 1000; i++) {
 			codes.push(letter + i.toString().padStart(3, '0'));
 		}
 	}
