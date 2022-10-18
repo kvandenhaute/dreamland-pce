@@ -119,11 +119,12 @@ export default class ShoppingCard {
 		if (!Utils.isSet(body)) {
 			this.codesToCheck.push(code);
 
-			return this.tryNextCode(searchParams);
+			return Utils.wait(400)
+				.then(() => this.tryNextCode(searchParams));
 		} else if (body.errorCode) {
 			this.sendProgress();
 
-			return Utils.wait(400)
+			return Utils.wait(10)
 				.then(() => this.tryNextCode(searchParams));
 		}
 
